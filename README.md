@@ -6,6 +6,8 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/rstudio/bundle/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/rstudio/bundle/actions/workflows/R-CMD-check.yaml)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/bundle)](https://CRAN.R-project.org/package=bundle)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![Codecov test
@@ -20,7 +22,7 @@ portable object, and restore it for use in new settings.
 
 ## Installation
 
-You can install the released version of vetiver from
+You can install the released version of bundle from
 [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
@@ -30,8 +32,8 @@ install.packages("bundle")
 And the development version from [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("rstudio/bundle")
+# install.packages("pak")
+pak::pak("rstudio/bundle")
 ```
 
 ## Overview
@@ -55,7 +57,7 @@ package provides a consistent interface for *bundling* model objects
 with their references so that they can be safely saved and re-loaded in
 production:
 
-<img src="man/figures/diagram_04.png" alt="A replica of the previous diagram, where the arrow previously connecting the model object in R session one and the standalone model object in R session two is connected by a verb called bundle. The bundle function outputs an object called a bundle." width="100%" />
+<img src="man/figures/diagram_04.png" alt="A diagram showing a rectangle, labeled model object, and another rectangle, labeled predictions. The two are connected by an arrow from model object to predictions, with the label 'predict'. There are two boxes labeled reference, connected to the arrow labeled predict with dotted arrows, to show that, most of the time, we don't need to think about including them in our workflow. There are two boxes, labeled R Session number one, and R session number two. In focus is the arrow from the model object, in R Session number one, to a model object in R session number two. This arrow connecting the model object in R session one and the model object in R session two is connected by a verb called bundle. The bundle function outputs an object called a bundle." width="100%" />
 
 For more on this diagram, see the [main bundle
 vignette](https://rstudio.github.io/bundle/articles/bundle.html).
@@ -98,10 +100,10 @@ mod
 #> call:
 #>   xgboost::xgb.train(params = list(eta = 0.3, max_depth = 6, gamma = 0, 
 #>     colsample_bytree = 1, colsample_bynode = 0.3, min_child_weight = 1, 
-#>     subsample = 1, objective = "reg:squarederror"), data = x$data, 
-#>     nrounds = 5, watchlist = x$watchlist, verbose = 0, nthread = 1)
+#>     subsample = 1), data = x$data, nrounds = 5, watchlist = x$watchlist, 
+#>     verbose = 0, nthread = 1, objective = "reg:squarederror")
 #> params (as set within xgb.train):
-#>   eta = "0.3", max_depth = "6", gamma = "0", colsample_bytree = "1", colsample_bynode = "0.3", min_child_weight = "1", subsample = "1", objective = "reg:squarederror", nthread = "1", validate_parameters = "TRUE"
+#>   eta = "0.3", max_depth = "6", gamma = "0", colsample_bytree = "1", colsample_bynode = "0.3", min_child_weight = "1", subsample = "1", nthread = "1", objective = "reg:squarederror", validate_parameters = "TRUE"
 #> xgb.attributes:
 #>   niter
 #> callbacks:
@@ -111,11 +113,11 @@ mod
 #> nfeatures : 10 
 #> evaluation_log:
 #>  iter training_rmse
-#>     1     14.695244
-#>     2     10.903444
-#>     3      8.231602
-#>     4      6.256097
-#>     5      4.757736
+#>     1     14.640496
+#>     2     10.927976
+#>     3      8.217181
+#>     4      6.262192
+#>     5      4.796391
 ```
 
 Note that simply saving and loading the model results in changes to the
@@ -127,7 +129,7 @@ saveRDS(mod, temp_file)
 mod2 <- readRDS(temp_file)
 
 compare(mod, mod2, ignore_formula_env = TRUE)
-#> `old$fit$handle` is <pointer: 0x13cf89a60>
+#> `old$fit$handle` is <pointer: 0x12fa5adc0>
 #> `new$fit$handle` is <pointer: 0x0>
 #> 
 #> `old$fit$handle` is attr(,"class")
@@ -174,13 +176,13 @@ r(
 #> # A tibble: 7 × 1
 #>   .pred
 #>   <dbl>
-#> 1  21.9
-#> 2  18.2
-#> 3  18.2
-#> 4  14.9
-#> 5  15.7
-#> 6  12.8
-#> 7  20.4
+#> 1  22.2
+#> 2  20.9
+#> 3  19.1
+#> 4  13.3
+#> 5  16.6
+#> 6  13.3
+#> 7  17.2
 ```
 
 For a more in-depth demonstration of the package, see the [main
