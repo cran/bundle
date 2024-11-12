@@ -85,7 +85,9 @@ mod_unbundled <- unbundle(mod_bundle)
 }
 \seealso{
 Other bundlers: 
+\code{\link{bundle}()},
 \code{\link{bundle.H2OAutoML}()},
+\code{\link{bundle.bart}()},
 \code{\link{bundle.keras.engine.training.Model}()},
 \code{\link{bundle.luz_module_fitted}()},
 \code{\link{bundle.model_fit}()},
@@ -93,7 +95,6 @@ Other bundlers:
 \code{\link{bundle.step_umap}()},
 \code{\link{bundle.train}()},
 \code{\link{bundle.workflow}()},
-\code{\link{bundle.xgb.Booster}()},
-\code{\link{bundle}()}
+\code{\link{bundle.xgb.Booster}()}
 }
 \concept{bundlers}

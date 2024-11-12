@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 should_eval <- 
   rlang::is_installed("keras") && 
   rlang::is_installed("callr") &&
@@ -70,6 +70,7 @@ temp_file <- tempfile()
 saveRDS(keras_fit, file = temp_file)
 
 ## ----keras-fresh-rds, linewidth = 60, error = TRUE----------------------------
+try({
 r(
   function(temp_file, new_data) {
     library(keras)
@@ -83,6 +84,7 @@ r(
     new_data = x_test
   )
 )
+})
 
 ## ----diagram-02, echo = FALSE, fig.alt = "A diagram showing the same pair of rectangles as before, connected by the arrow labeled predict. This time, though, we introduce two boxes labeled reference. These two boxes are connected to the arrow labeled predict with dotted arrows, to show that, most of the time, we don't need to think about including them in our workflow.", out.width = '100%'----
 knitr::include_graphics("figures/diagram_02.png")

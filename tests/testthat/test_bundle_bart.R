@@ -1,29 +1,27 @@
-test_that("bundling + unbundling xgboost fits", {
-  skip_if_not_installed("xgboost")
+test_that("bundling + unbundling bart fits", {
+  skip_if_not_installed("dbarts")
   skip_if_not_installed("butcher")
 
-  library(xgboost)
-
-  data(agaricus.test)
+  library(dbarts)
 
   # define a function to fit a model -------------------------------------------
   fit_model <- function() {
+    mtcars$vs <- as.factor(mtcars$vs)
+
     set.seed(1)
-
-    data(agaricus.train)
-
-    xgb <- xgboost(data = agaricus.train$data, label = agaricus.train$label,
-                   max_depth = 2, eta = 1, nthread = 2, nrounds = 2,
-                   objective = "binary:logistic")
-
-    xgb
+    dbarts::bart(
+      mtcars[c("disp", "hp")],
+      mtcars$vs,
+      keeptrees = TRUE,
+      verbose = FALSE
+    )
   }
 
   # pass fit fn to a new session, fit, bundle, return bundle -------------------
   mod_bundle <-
     callr::r(
       function(fit_model) {
-        library(xgboost)
+        library(dbarts)
 
         mod <- fit_model()
 
@@ -36,15 +34,16 @@ test_that("bundling + unbundling xgboost fits", {
   mod_unbundled_preds <-
     callr::r(
       function(mod_bundle, test_data) {
-        library(xgboost)
+        library(dbarts)
 
         mod_unbundled <- bundle::unbundle(mod_bundle)
 
+        set.seed(1)
         predict(mod_unbundled, test_data)
       },
       args = list(
         mod_bundle = mod_bundle,
-        test_data = agaricus.test$data
+        test_data = mtcars
       )
     )
 
@@ -52,7 +51,7 @@ test_that("bundling + unbundling xgboost fits", {
   mod_butchered_bundle <-
     callr::r(
       function(fit_model) {
-        library(xgboost)
+        library(dbarts)
 
         mod <- fit_model()
 
@@ -69,23 +68,23 @@ test_that("bundling + unbundling xgboost fits", {
 
         mod_butchered_unbundled <- unbundle(mod_butchered_bundle)
 
+        set.seed(1)
         predict(mod_butchered_unbundled, test_data)
       },
       args = list(
         mod_butchered_bundle = mod_butchered_bundle,
-        test_data = agaricus.test$data
+        test_data = mtcars
       )
     )
 
   # run expectations -----------------------------------------------------------
-  data(agaricus.test)
-
   mod_fit <- fit_model()
-  mod_preds <- predict(mod_fit, agaricus.test$data)
+  set.seed(1)
+  mod_preds <- predict(mod_fit, mtcars)
 
   # check classes
-  expect_s3_class(mod_bundle, "bundled_xgb.Booster")
-  expect_s3_class(unbundle(mod_bundle), "xgb.Booster")
+  expect_s3_class(mod_bundle, "bundled_bart")
+  expect_s3_class(unbundle(mod_bundle), "bart")
 
   # ensure that the situater function didn't bring along the whole model
   expect_false("x" %in% names(environment(mod_bundle$situate)))
@@ -96,8 +95,27 @@ test_that("bundling + unbundling xgboost fits", {
   # compare predictions
   expect_equal(mod_preds, mod_unbundled_preds)
   expect_equal(mod_preds, mod_butchered_unbundled_preds)
+})
 
-  # verify nfeatures and feature_names are kept
-  expect_identical(unbundle(mod_bundle)$nfeatures, mod_fit$nfeatures)
-  expect_identical(unbundle(mod_bundle)$feature_names, mod_fit$feature_names)
+test_that("bundle.bart errors informatively with model_spec input (#64)", {
+  skip_if_not_installed("parsnip")
+
+  expect_snapshot(error = TRUE, bundle(parsnip::bart()))
+})
+
+test_that("bundle.bart errors informatively when `keeptrees = FALSE` (#64)", {
+  skip_if_not_installed("dbarts")
+
+  mtcars$vs <- as.factor(mtcars$vs)
+
+  set.seed(1)
+  fit <-
+    dbarts::bart(
+      mtcars[c("disp", "hp")],
+      mtcars$vs,
+      keeptrees = FALSE,
+      verbose = FALSE
+    )
+
+  expect_snapshot(error = TRUE, bundle(fit))
 })
